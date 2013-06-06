@@ -1,0 +1,13 @@
+diff --git a/media/libmedia/AudioRecord.cpp b/media/libmedia/AudioRecord.cpp
+index 2725b5b..dbde659 100644
+--- a/media/libmedia/AudioRecord.cpp
++++ b/media/libmedia/AudioRecord.cpp
+@@ -141,7 +141,7 @@ status_t AudioRecord::set(
+         return INVALID_OPERATION;
+     }
+ 
+-    if (inputSource == AUDIO_SOURCE_DEFAULT) {
++    if (inputSource == AUDIO_SOURCE_DEFAULT || inputSource == AUDIO_SOURCE_CAMCORDER) {
+         inputSource = AUDIO_SOURCE_MIC;
+     }
+ 
