@@ -23,8 +23,7 @@ rm -rf $DSTDIR/packages/apps/Phone
 
 rm -rf $DSTDIR/frameworks/av
 
-rm -rf $DSTDIR/external/libphonenumber/java/src/com/android/i18n/phonenumbers/geocoding/data/86_zh
-rm -rf $DSTDIR/external/libphonenumber/java/src/com/android/i18n/phonenumbers/data/PhoneNumberMetadataProto_CN
+rm -rf $DSTDIR/external/libphonenumber/
 
 (cd $DSTDIR; repo sync -j16)
 
