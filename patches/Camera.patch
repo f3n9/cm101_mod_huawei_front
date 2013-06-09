@@ -1,0 +1,16 @@
+diff --git a/src/com/android/camera/Util.java b/src/com/android/camera/Util.java
+index 60efc60..2d6d80d 100644
+--- a/src/com/android/camera/Util.java
++++ b/src/com/android/camera/Util.java
+@@ -872,6 +872,11 @@ public class Util {
+         // Clear previous GPS location from the parameters.
+         parameters.removeGpsData();
+ 
++	// Skip setting GPS data in Camera's parameters to avoid random crashes. 
++	// However location information will still be stored in captured pictures.
++	if (true){
++	    return;
++	}
+         // We always encode GpsTimeStamp
+         parameters.setGpsTimestamp(System.currentTimeMillis() / 1000);
+ 

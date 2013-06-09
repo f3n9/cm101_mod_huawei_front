@@ -48,8 +48,14 @@ echo ""
 echo "Applying AudioRecord patch"
 cat patches/AudioRecord.patch | patch -d $DSTDIR/frameworks/av/ -p1 -N -r - -s
 
+# Adding caller geo info database
 echo "Adding CallerGeoInfo data"
 cp patches/geoloc/86_zh $DSTDIR/external/libphonenumber/java/src/com/android/i18n/phonenumbers/geocoding/data/86_zh
 cp patches/geoloc/PhoneNumberMetadataProto_CN $DSTDIR/external/libphonenumber/java/src/com/android/i18n/phonenumbers/data/PhoneNumberMetadataProto_CN
+
+# Camera patch
+echo ""
+echo "Applying Camera patch"
+cat patches/Camera.patch | patch -d $DSTDIR/packages/apps/Camera/ -p1 -N -r - -s
 
 echo "Done"
