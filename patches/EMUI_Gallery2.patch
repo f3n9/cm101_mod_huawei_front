@@ -1,0 +1,111 @@
+diff --git a/core/java/android/os/storage/StorageVolume.java b/core/java/android/os/storage/StorageVolume.java
+index 177a955..a9d9dd9 100644
+--- a/core/java/android/os/storage/StorageVolume.java
++++ b/core/java/android/os/storage/StorageVolume.java
+@@ -239,6 +239,9 @@ public class StorageVolume implements Parcelable {
+ 
+     @Override
+     public void writeToParcel(Parcel parcel, int flags) {
++        if (mStorageId == 99){
++            return;
++        }
+         parcel.writeInt(mStorageId);
+         parcel.writeString(mPath.toString());
+         parcel.writeInt(mDescriptionId);
+diff --git a/core/java/android/widget/VideoView.java b/core/java/android/widget/VideoView.java
+index 329b0df..dd4f0c4 100644
+--- a/core/java/android/widget/VideoView.java
++++ b/core/java/android/widget/VideoView.java
+@@ -89,6 +89,7 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+     private boolean     mCanPause;
+     private boolean     mCanSeekBack;
+     private boolean     mCanSeekForward;
++    private STCallback  mSTCallback;
+ 
+     public VideoView(Context context) {
+         super(context);
+@@ -226,6 +227,9 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+         release(false);
+         try {
+             mMediaPlayer = new MediaPlayer();
++            if (this.mSTCallback != null){
++                this.mSTCallback.setPlayer(this.mMediaPlayer);
++            }
+             mMediaPlayer.setOnPreparedListener(mPreparedListener);
+             mMediaPlayer.setOnVideoSizeChangedListener(mSizeChangedListener);
+             mMediaPlayer.setOnCompletionListener(mCompletionListener);
+@@ -582,6 +586,9 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+ 
+     public void start() {
+         if (isInPlaybackState()) {
++            if (this.mSTCallback != null){
++                this.mSTCallback.start();
++            }
+             mMediaPlayer.start();
+             mCurrentState = STATE_PLAYING;
+         }
+@@ -591,6 +598,9 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+     public void pause() {
+         if (isInPlaybackState()) {
+             if (mMediaPlayer.isPlaying()) {
++                if (this.mSTCallback != null){
++                    this.mSTCallback.pause();
++                }
+                 mMediaPlayer.pause();
+                 mCurrentState = STATE_PAUSED;
+             }
+@@ -623,6 +633,9 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+ 
+     public void seekTo(int msec) {
+         if (isInPlaybackState()) {
++            if (this.mSTCallback != null){
++                this.mSTCallback.seekTo(msec);
++            }
+             mMediaPlayer.seekTo(msec);
+             mSeekWhenPrepared = 0;
+         } else {
+@@ -659,4 +672,17 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+     public boolean canSeekForward() {
+         return mCanSeekForward;
+     }
++
++    public void setSTCallback(STCallback pSTCallback)
++    {
++        this.mSTCallback = pSTCallback;
++    }
++
++    public static abstract interface STCallback
++    {
++        public abstract void pause();
++        public abstract void seekTo(int pmsec);
++        public abstract void setPlayer(MediaPlayer pMediaPlayer);
++        public abstract void start();
++    }
+ }
+diff --git a/services/java/com/android/server/MountService.java b/services/java/com/android/server/MountService.java
+index dfe0c2c..0f89dfd 100644
+--- a/services/java/com/android/server/MountService.java
++++ b/services/java/com/android/server/MountService.java
+@@ -2139,14 +2139,22 @@ class MountService extends IMountService.Stub
+                 Binder.getCallingPid(), Binder.getCallingUid()) == PERMISSION_GRANTED);
+ 
+         synchronized (mVolumesLock) {
++            boolean foundInternal = false;
+             final ArrayList<StorageVolume> filtered = Lists.newArrayList();
+             for (StorageVolume volume : mVolumes) {
+                 final UserHandle owner = volume.getOwner();
+                 final boolean ownerMatch = owner == null || owner.getIdentifier() == callingUserId;
+                 if (accessAll || ownerMatch) {
+                     filtered.add(volume);
++                    if (volume.isEmulated()){
++                        foundInternal = true;
++                    }
+                 }
+             }
++            if (! foundInternal && filtered.size() > 0){
++                UserHandle owner = filtered.get(0).getOwner();
++                filtered.add(new StorageVolume(new File("/mnt/internal"),99,false,false,true,200,false,4l*1024l*1024l*1024l,owner));
++            }
+             return filtered.toArray(new StorageVolume[filtered.size()]);
+         }
+     }
