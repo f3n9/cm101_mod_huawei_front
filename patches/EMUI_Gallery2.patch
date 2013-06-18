@@ -1,12 +1,12 @@
 diff --git a/core/java/android/os/storage/StorageVolume.java b/core/java/android/os/storage/StorageVolume.java
-index 177a955..a9d9dd9 100644
+index 177a955..f39d45e 100644
 --- a/core/java/android/os/storage/StorageVolume.java
 +++ b/core/java/android/os/storage/StorageVolume.java
 @@ -239,6 +239,9 @@ public class StorageVolume implements Parcelable {
  
      @Override
      public void writeToParcel(Parcel parcel, int flags) {
-+        if (mStorageId == 99){
++        if ("/mnt/internal".equals(mPath.toString())){
 +            return;
 +        }
          parcel.writeInt(mStorageId);
@@ -83,10 +83,10 @@ index 329b0df..dd4f0c4 100644
 +    }
  }
 diff --git a/services/java/com/android/server/MountService.java b/services/java/com/android/server/MountService.java
-index dfe0c2c..0f89dfd 100644
+index dfe0c2c..3e5059c 100644
 --- a/services/java/com/android/server/MountService.java
 +++ b/services/java/com/android/server/MountService.java
-@@ -2139,14 +2139,22 @@ class MountService extends IMountService.Stub
+@@ -2139,14 +2139,25 @@ class MountService extends IMountService.Stub
                  Binder.getCallingPid(), Binder.getCallingUid()) == PERMISSION_GRANTED);
  
          synchronized (mVolumesLock) {
@@ -104,7 +104,10 @@ index dfe0c2c..0f89dfd 100644
              }
 +            if (! foundInternal && filtered.size() > 0){
 +                UserHandle owner = filtered.get(0).getOwner();
-+                filtered.add(new StorageVolume(new File("/mnt/internal"),99,false,false,true,200,false,4l*1024l*1024l*1024l,owner));
++                Resources resources = mContext.getResources();
++                //int descID = filtered.get(0).getDescriptionId();
++                int descID = resources.getIdentifier("@string/storage_internal",null,resources.getResourcePackageName(filtered.get(0).getDescriptionId()));
++                filtered.add(new StorageVolume(new File("/mnt/internal"),descID, false,false,true,200,false,4l*1024l*1024l*1024l,owner));
 +            }
              return filtered.toArray(new StorageVolume[filtered.size()]);
          }
