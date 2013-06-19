@@ -1,17 +1,3 @@
-diff --git a/core/java/android/os/storage/StorageVolume.java b/core/java/android/os/storage/StorageVolume.java
-index 177a955..f39d45e 100644
---- a/core/java/android/os/storage/StorageVolume.java
-+++ b/core/java/android/os/storage/StorageVolume.java
-@@ -239,6 +239,9 @@ public class StorageVolume implements Parcelable {
- 
-     @Override
-     public void writeToParcel(Parcel parcel, int flags) {
-+        if ("/mnt/internal".equals(mPath.toString())){
-+            return;
-+        }
-         parcel.writeInt(mStorageId);
-         parcel.writeString(mPath.toString());
-         parcel.writeInt(mDescriptionId);
 diff --git a/core/java/android/widget/VideoView.java b/core/java/android/widget/VideoView.java
 index 329b0df..dd4f0c4 100644
 --- a/core/java/android/widget/VideoView.java
@@ -83,10 +69,20 @@ index 329b0df..dd4f0c4 100644
 +    }
  }
 diff --git a/services/java/com/android/server/MountService.java b/services/java/com/android/server/MountService.java
-index dfe0c2c..3e5059c 100644
+index dfe0c2c..3a86f99 100644
 --- a/services/java/com/android/server/MountService.java
 +++ b/services/java/com/android/server/MountService.java
-@@ -2139,14 +2139,25 @@ class MountService extends IMountService.Stub
+@@ -1530,6 +1530,9 @@ class MountService extends IMountService.Stub
+      * @return state of the volume at the specified mount point
+      */
+     public String getVolumeState(String mountPoint) {
++        if ("/mnt/internal".equals(mountPoint)){
++            return Environment.MEDIA_MOUNTED;
++        }
+         synchronized (mVolumesLock) {
+             String state = mVolumeStates.get(mountPoint);
+             if (state == null) {
+@@ -2139,14 +2142,27 @@ class MountService extends IMountService.Stub
                  Binder.getCallingPid(), Binder.getCallingUid()) == PERMISSION_GRANTED);
  
          synchronized (mVolumesLock) {
@@ -107,7 +103,9 @@ index dfe0c2c..3e5059c 100644
 +                Resources resources = mContext.getResources();
 +                //int descID = filtered.get(0).getDescriptionId();
 +                int descID = resources.getIdentifier("@string/storage_internal",null,resources.getResourcePackageName(filtered.get(0).getDescriptionId()));
-+                filtered.add(new StorageVolume(new File("/mnt/internal"),descID, false,false,true,200,false,4l*1024l*1024l*1024l,owner));
++                StorageVolume fakeInternalVolume = new StorageVolume(new File("/mnt/internal"),descID, false,false,true,200,false,4l*1024l*1024l*1024l,owner);
++                fakeInternalVolume.setStorageId(filtered.size());
++                filtered.add(fakeInternalVolume);
 +            }
              return filtered.toArray(new StorageVolume[filtered.size()]);
          }
