@@ -1,5 +1,5 @@
 diff --git a/core/java/android/widget/VideoView.java b/core/java/android/widget/VideoView.java
-index 329b0df..dd4f0c4 100644
+index 329b0df..61b6ae3 100644
 --- a/core/java/android/widget/VideoView.java
 +++ b/core/java/android/widget/VideoView.java
 @@ -89,6 +89,7 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
@@ -50,16 +50,22 @@ index 329b0df..dd4f0c4 100644
              mMediaPlayer.seekTo(msec);
              mSeekWhenPrepared = 0;
          } else {
-@@ -659,4 +672,17 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
+@@ -659,4 +672,23 @@ public class VideoView extends SurfaceView implements MediaPlayerControl {
      public boolean canSeekForward() {
          return mCanSeekForward;
      }
 +
++    /**
++     * @hide
++     */
 +    public void setSTCallback(STCallback pSTCallback)
 +    {
 +        this.mSTCallback = pSTCallback;
 +    }
 +
++    /**
++     * @hide
++     */
 +    public static abstract interface STCallback
 +    {
 +        public abstract void pause();
